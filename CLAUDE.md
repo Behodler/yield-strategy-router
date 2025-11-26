@@ -2,9 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Submodule: Yieldstrategyrouter
+## Submodule: YieldStrategyRouter
 
-This is a Foundry smart contract submodule for the Yieldstrategyrouter contract.
+This is a Foundry smart contract submodule for the YieldStrategyRouter contract.
+
+## Project Purpose
+
+The YieldStrategyRouter serves as a **registry contract** for yield strategies, analogous to Uniswap's factory contract for retrieving and registering pairs. Instead of token pairs, this router maps **underlying tokens to yield strategies**.
+
+### Core Functionality
+
+- **Token-to-Strategy Mapping**: Provides a 1:1 mapping between underlying tokens and their corresponding yield strategies
+  - Example: Dola token address → AutoDolaYieldStrategy
+- **Owner-Controlled Registration**: Only the contract owner can register new mappings
+- **Strategy Lookup**: Downstream consumers can query the router to find the appropriate yield strategy for any registered underlying token
+
+### Architecture
+
+```
+┌─────────────────────┐
+│  Downstream Consumer│
+└─────────┬───────────┘
+          │ getStrategy(underlyingToken)
+          ▼
+┌─────────────────────┐
+│ YieldStrategyRouter │  ← Owner registers mappings
+└─────────┬───────────┘
+          │ returns
+          ▼
+┌─────────────────────┐
+│   AYieldStrategy    │  ← Abstract contract from vault dependency
+└─────────────────────┘
+```
+
+### Relationship to Dependencies
+
+- **vault (mutable dependency)**: Provides the `AYieldStrategy` abstract contract that all registered yield strategies must inherit from
+- The router stores and returns references to contracts that implement `AYieldStrategy`
 
 ## Dependency Management
 
