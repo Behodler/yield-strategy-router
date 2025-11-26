@@ -24,42 +24,21 @@ if [ ! -d "$REPO_NAME/src/interfaces" ]; then
     exit 1
 fi
 
-# Perform post-clone cleanup - keep only interfaces and abstract contracts
-echo "Cleaning up implementation details, keeping only interfaces and abstract contracts..."
+# Perform post-clone cleanup - keep only interfaces
+echo "Cleaning up implementation details, keeping only interfaces..."
 cd "$REPO_NAME" || exit 1
 
-# Create temp directory for preservation
-TEMP_DIR="/tmp/mutable_dep_temp_$$"
-mkdir -p "$TEMP_DIR"
-
-# Save interfaces directory
+# Save interfaces directory temporarily
 if [ -d "src/interfaces" ]; then
-    cp -r src/interfaces "$TEMP_DIR/interfaces"
+    cp -r src/interfaces /tmp/interfaces_temp_$$
 fi
-
-# Save abstract contracts (files starting with 'A')
-for f in src/A*.sol; do
-    if [ -f "$f" ]; then
-        cp "$f" "$TEMP_DIR/"
-    fi
-done
 
 # Remove all src content except .git
 find src -mindepth 1 -maxdepth 1 ! -name '.git*' -exec rm -rf {} +
 
 # Restore interfaces
-if [ -d "$TEMP_DIR/interfaces" ]; then
-    mv "$TEMP_DIR/interfaces" src/interfaces
+if [ -d "/tmp/interfaces_temp_$$" ]; then
+    mv /tmp/interfaces_temp_$$ src/interfaces
 fi
 
-# Restore abstract contracts
-for f in "$TEMP_DIR"/A*.sol; do
-    if [ -f "$f" ]; then
-        mv "$f" src/
-    fi
-done
-
-# Clean up temp directory
-rm -rf "$TEMP_DIR"
-
-echo "Successfully added mutable dependency: $REPO_NAME (interfaces and abstract contracts only)"
+echo "Successfully added mutable dependency: $REPO_NAME (interfaces only)"
